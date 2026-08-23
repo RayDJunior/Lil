@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz · Sejarah Palang Merah</title>
+    <style>
+        /* ===== RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f8f9fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.4s ease;
+        }
+
+        /* ===== LAYAR PEMBUKA ===== */
+        #welcomeScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+            padding: 2rem;
+            background: #ffffff;
+            text-align: center;
+            transition: opacity 0.6s ease;
+        }
+
+        #welcomeScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .logo-wrapper {
+            width: 140px;
+            height: 140px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(220, 20, 20, 0.08);
+            margin-bottom: 2.5rem;
+            border: 2px solid #e8eef5;
+            transition: 0.3s ease;
+        }
+
+        .logo-wrapper:hover {
+            box-shadow: 0 30px 80px rgba(220, 20, 20, 0.15);
+            transform: scale(1.02);
+        }
+
+        .logo-svg {
+            width: 85px;
+            height: 85px;
+        }
+
+        .welcome-title {
+            font-size: 2.8rem;
+            font-weight: 300;
+            color: #1a1a2e;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-title span {
+            font-weight: 700;
+            color: #cc1f1f;
+        }
+
+        .welcome-sub {
+            font-size: 1.1rem;
+            color: #6a7a8a;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 2.8rem;
+        }
+
+        .btn-primary {
+            background: #cc1f1f;
+            color: #ffffff;
+            border: none;
+            padding: 1rem 3.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 60px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: 0.3s ease;
+            box-shadow: 0 8px 30px rgba(204, 31, 31, 0.25);
+            text-transform: uppercase;
+        }
+
+        .btn-primary:hover {
+            background: #a81616;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 40px rgba(204, 31, 31, 0.35);
+        }
+
+        /* ===== LAYAR QUIZ ===== */
+        #quizScreen {
+            display: none;
+            width: 100%;
+            max-width: 820px;
+            padding: 2.5rem 2rem;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.04);
+            margin: 2rem;
+            border: 1px solid #edf2f7;
+            transition: opacity 0.5s ease;
+        }
+
+        #quizScreen.active {
+            display: block;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.2rem;
+            border-bottom: 2px solid #f0f4f8;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .quiz-progress {
+            font-size: 0.9rem;
+            color: #6a7a8a;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        .quiz-progress span {
+            color: #cc1f1f;
+            font-weight: 700;
+        }
+
+        .quiz-score {
+            font-size: 0.9rem;
+            color: #6a7a8a;
+            font-weight: 500;
+            background: #f0f4f8;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+        }
+
+        .quiz-score span {
+            color: #cc1f1f;
+            font-weight: 700;
+        }
+
+        .question-number {
+            font-size: 0.8rem;
+            color: #cc1f1f;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: #1a1a2e;
+            line-height: 1.5;
+            margin-bottom: 2.2rem;
+            min-height: 4rem;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .option-btn {
+            background: #f8f9fc;
+            border: 2px solid #e8edf4;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            color: #1a1a2e;
+            cursor: pointer;
+            transition: 0.25s ease;
+            text-align: left;
+            font-weight: 450;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            background: #edf2f7;
+            border-color: #cc1f1f;
+            transform: translateY(-2px);
+        }
+
+        .option-btn .letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #e8edf4;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #4a5a6a;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            background: #e6f7e6;
+            border-color: #2e7d32;
+        }
+        .option-btn.correct .letter {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .option-btn.wrong {
+            background: #fde8e8;
+            border-color: #cc1f1f;
+        }
+        .option-btn.wrong .letter {
+            background: #cc1f1f;
+            color: #fff;
+        }
+
+        .option-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .option-btn.disabled:hover {
+            transform: none;
+            border-color: #e8edf4;
+        }
+
+        .quiz-footer {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-next {
+            background: #1a1a2e;
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 60px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s ease;
+            opacity: 0.4;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        .btn-next.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn-next.active:hover {
+            background: #cc1f1f;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(204, 31, 31, 0.25);
+        }
+
+        /* ===== LAYAR HASIL ===== */
+        #resultScreen {
+            display: none;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        #resultScreen.active {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-title {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-sub {
+            font-size: 1.1rem;
+            color: #6a7a8a;
+            margin-bottom: 2rem;
+        }
+
+        .result-score {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #cc1f1f;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-detail {
+            font-size: 1rem;
+            color: #6a7a8a;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-restart {
+            background: transparent;
+            border: 2px solid #cc1f1f;
+            color: #cc1f1f;
+            padding: 0.8rem 3rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-restart:hover {
+            background: #cc1f1f;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(204, 31, 31, 0.2);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 700px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+            .question-text {
+                font-size: 1.3rem;
+            }
+            .welcome-title {
+                font-size: 2rem;
+            }
+            .logo-wrapper {
+                width: 120px;
+                height: 120px;
+            }
+            .logo-svg {
+                width: 70px;
+                height: 70px;
+            }
+            #quizScreen {
+                padding: 1.5rem 1.2rem;
+                margin: 1rem;
+            }
+            .quiz-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .welcome-title {
+                font-size: 1.6rem;
+            }
+            .btn-primary {
+                padding: 0.8rem 2.2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LAYAR PEMBUKA ===== -->
+    <div id="welcomeScreen">
+        <div class="logo-wrapper">
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="10" fill="white"/>
+                <rect x="10" y="10" width="80" height="80" rx="40" fill="#cc1f1f"/>
+                <rect x="30" y="42" width="40" height="16" rx="4" fill="white"/>
+                <rect x="42" y="30" width="16" height="40" rx="4" fill="white"/>
+            </svg>
+        </div>
+        <h1 class="welcome-title">Sejarah <span>Palang Merah</span></h1>
+        <p class="welcome-sub">PMI · ICRC · IFRC · PMR</p>
+        <button class="btn-primary" onclick="startQuiz()">Masuk Ke Quiz</button>
+    </div>
+
+    <!-- ===== LAYAR QUIZ ===== -->
+    <div id="quizScreen">
+        <div class="quiz-header">
+            <div class="quiz-progress">Pertanyaan <span id="currentQ">1</span> / <span id="totalQ">30</span></div>
+            <div class="quiz-score">Skor: <span id="scoreDisplay">0</span></div>
+        </div>
+
+        <div id="questionContainer">
+            <div class="question-number" id="qNum">Pertanyaan 1</div>
+            <div class="question-text" id="qText">Loading...</div>
+            <div class="options" id="optionsContainer"></div>
+        </div>
+
+        <div id="resultScreen">
+            <div class="result-icon" id="resultIcon">🏆</div>
+            <div class="result-title" id="resultTitle">Quiz Selesai!</div>
+            <div class="result-sub" id="resultSub">Kamu hebat, Xso.</div>
+            <div class="result-score" id="resultScore">0/30</div>
+            <div class="result-detail" id="resultDetail">Jawaban benar: 0 dari 30</div>
+            <button class="btn-restart" onclick="restartQuiz()">Ulangi Quiz</button>
+        </div>
+
+        <div class="quiz-footer">
+            <button class="btn-next" id="btnNext" onclick="nextQuestion()">Selanjutnya →</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== 30 SOAL SEJARAH PALANG MERAH =====
+        const questions = [
+            // Pendiri & Awal Mula
+            { question: "Siapa pendiri Palang Merah Internasional (ICRC)?", options: ["Florence Nightingale", "Henry Dunant", "Jean-Henri Dunant", "Clara Barton"], answer: 2 },
+            { question: "Tahun berapa ICRC didirikan?", options: ["1859", "1863", "1864", "1870"], answer: 1 },
+            { question: "Apa kepanjangan dari ICRC?", options: ["International Committee of the Red Cross", "International Council of Red Cross", "International Confederation of Red Cross", "International Congress of Red Cross"], answer: 0 },
+            { question: "Peristiwa apa yang menginspirasi Henry Dunant mendirikan Palang Merah?", options: ["Perang Napoleon", "Pertempuran Solferino", "Perang Dunia I", "Perang Saudara Amerika"], answer: 1 },
+            { question: "Apa nama buku yang ditulis Henry Dunant tentang pengalamannya di Solferino?", options: ["A Memory of Solferino", "The Red Cross Memoir", "War and Humanity", "The Battle of Solferino"], answer: 0 },
+            { question: "Clara Barton adalah pendiri Palang Merah di negara mana?", options: ["Inggris", "Amerika Serikat", "Prancis", "Swiss"], answer: 1 },
+            { question: "Henry Dunant menerima Penghargaan Nobel Perdamaian pada tahun?", options: ["1895", "1901", "1910", "1920"], answer: 1 },
+
+            // IFRC
+            { question: "Apa kepanjangan dari IFRC?", options: ["International Federation of Red Cross and Red Crescent Societies", "International Fund for Red Cross", "International Federation of Red Crescent", "International Red Cross Federation"], answer: 0 },
+            { question: "IFRC berdiri pada tahun?", options: ["1919", "1920", "1921", "1922"], answer: 0 },
+            { question: "Di mana kantor pusat IFRC berada?", options: ["Jenewa", "Paris", "London", "New York"], answer: 0 },
+            { question: "Berapa jumlah anggota IFRC saat ini (kurang lebih)?", options: ["100", "150", "190", "220"], answer: 2 },
+
+            // PMI
+            { question: "PMI (Palang Merah Indonesia) didirikan pada tahun?", options: ["1945", "1946", "1947", "1950"], answer: 0 },
+            { question: "Siapa tokoh yang pertama kali mengusulkan pendirian PMI?", options: ["Soekarno", "Mohammad Hatta", "Dr. R. Mochtar", "I Gusti Ngurah Rai"], answer: 2 },
+            { question: "Kantor pusat PMI berada di kota?", options: ["Jakarta", "Bandung", "Surabaya", "Yogyakarta"], answer: 0 },
+            { question: "Siapa Ketua Umum PMI pertama?", options: ["Soekarno", "Mohammad Hatta", "Dr. R. Mochtar", "Sri Sultan Hamengkubuwono IX"], answer: 2 },
+            { question: "PMI memiliki lambang apa?", options: ["Palang Merah di atas putih", "Bulan Sabit Merah", "Kristal Merah", "Singa dan Matahari Merah"], answer: 0 },
+
+            // PMR
+            { question: "Apa singkatan dari PMR?", options: ["Palang Merah Remaja", "Pemuda Merah Indonesia", "Pergerakan Merah Remaja", "Palang Merah Rakyat"], answer: 0 },
+            { question: "PMR di Indonesia dibentuk pada tahun?", options: ["1950", "1955", "1960", "1970"], answer: 0 },
+            { question: "PMR biasanya ditemukan di lingkungan mana?", options: ["Sekolah", "Kantor", "Rumah Sakit", "Pasar"], answer: 0 },
+            { question: "PMR memiliki tingkatan, salah satunya adalah PMR Wira. Apa tingkatan lainnya?", options: ["PMR Madya", "PMR Utama", "PMR Pratama", "Semua benar"], answer: 3 },
+
+            // Prinsip Dasar
+            { question: "Prinsip dasar Gerakan Palang Merah dan Bulan Sabit Merah ada berapa?", options: ["5", "7", "10", "12"], answer: 1 },
+            { question: "Salah satu prinsip dasar Palang Merah adalah 'Kemanusiaan'. Apa prinsip lainnya?", options: ["Kesamaan", "Keadilan", "Kesetiaan", "Kebersamaan"], answer: 0 },
+            { question: "Apa prinsip 'Netralitas' dalam Palang Merah berarti?", options: ["Tidak memihak dalam konflik", "Netral dalam politik", "Tidak mengambil sisi agama", "Semua benar"], answer: 3 },
+            { question: "Prinsip 'Kesukarelaan' berarti?", options: ["Tidak mencari keuntungan", "Bekerja dengan sukarela", "Tidak dibayar", "Semua benar"], answer: 3 },
+
+            // Simbol & Konvensi Jenewa
+            { question: "Apa simbol Palang Merah yang digunakan di negara-negara Islam?", options: ["Bulan Sabit Merah", "Kristal Merah", "Singa dan Matahari Merah", "Palang Merah"], answer: 0 },
+            { question: "Simbol 'Kristal Merah' diperkenalkan pada tahun?", options: ["2000", "2005", "2010", "2015"], answer: 1 },
+            { question: "Konvensi Jenewa pertama ditandatangani pada tahun?", options: ["1864", "1906", "1929", "1949"], answer: 0 },
+            { question: "Konvensi Jenewa terdiri dari berapa perjanjian?", options: ["2", "3", "4", "5"], answer: 2 },
+
+            // Tokoh & Peristiwa
+            { question: "Kapan ICRC pertama kali menerima Penghargaan Nobel Perdamaian?", options: ["1917", "1944", "1963", "Semua benar"], answer: 3 },
+            { question: "Hari Palang Merah diperingati setiap tanggal?", options: ["8 Mei", "17 Agustus", "10 Desember", "1 Januari"], answer: 0 }
+        ];
+
+        // ===== VARIABEL =====
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+        const totalQuestions = questions.length;
+
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const questionContainer = document.getElementById('questionContainer');
+        const btnNext = document.getElementById('btnNext');
+
+        const qNum = document.getElementById('qNum');
+        const qText = document.getElementById('qText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const currentQ = document.getElementById('currentQ');
+        const totalQ = document.getElementById('totalQ');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        // ===== FUNGSI =====
+        function startQuiz() {
+            welcomeScreen.classList.add('hidden');
+            quizScreen.classList.add('active');
+            totalQ.textContent = totalQuestions;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIndex];
+            qNum.textContent = `Pertanyaan ${currentIndex + 1}`;
+            qText.textContent = q.question;
+            currentQ.textContent = currentIndex + 1;
+            scoreDisplay.textContent = score;
+
+            optionsContainer.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="letter">${letters[idx]}</span> ${opt}`;
+                btn.dataset.index = idx;
+                btn.onclick = () => selectAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            answered = false;
+            btnNext.classList.remove('active');
+            resultScreen.classList.remove('active');
+            questionContainer.style.display = 'block';
+        }
+
+        function selectAnswer(selected) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentIndex];
+            const options = optionsContainer.querySelectorAll('.option-btn');
+
+            options.forEach((btn, idx) => {
+                btn.classList.add('disabled');
+                if (idx === q.answer) {
+                    btn.classList.add('correct');
+                } else if (idx === selected && selected !== q.answer) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            if (selected === q.answer) {
+                score++;
+                scoreDisplay.textContent = score;
+            }
+
+            btnNext.classList.add('active');
+        }
+
+        function nextQuestion() {
+            if (!answered) return;
+
+            currentIndex++;
+            if (currentIndex < totalQuestions) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            questionContainer.style.display = 'none';
+            btnNext.classList.remove('active');
+            resultScreen.classList.add('active');
+
+            const total = totalQuestions;
+            const benar = score;
+            const persen = Math.round((benar / total) * 100);
+
+            let icon, title, sub;
+            if (persen === 100) {
+                icon = '🌟';
+                title = 'Sempurna!';
+                sub = 'Kamu benar-benar ahli sejarah Palang Merah!';
+            } else if (persen >= 80) {
+                icon = '🏆';
+                title = 'Luar Biasa!';
+                sub = 'Kamu punya pengetahuan yang mendalam!';
+            } else if (persen >= 60) {
+                icon = '📖';
+                title = 'Cukup Baik!';
+                sub = 'Terus belajar dan tingkatkan lagi!';
+            } else if (persen >= 40) {
+                icon = '🕊️';
+                title = 'Terus Belajar!';
+                sub = 'Sejarah Palang Merah itu menarik, yuk pelajari lagi!';
+            } else {
+                icon = '📚';
+                title = 'Ayo Belajar Lagi!';
+                sub = 'Jangan menyerah, pelajari sejarah Palang Merah lebih dalam!';
+            }
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultSub').textContent = sub;
+            document.getElementById('resultScore').textContent = `${benar}/${total}`;
+            document.getElementById('resultDetail').textContent = `Jawaban benar: ${benar} dari ${total} (${persen}%)`;
+        }
+
+        function restartQuiz() {
+            currentIndex = 0;
+            score = 0;
+            answered = false;
+            resultScreen.classList.remove('active');
+            questionContainer.style.display = 'block';
+            loadQuestion();
+            scoreDisplay.textContent = score;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && btnNext.classList.contains('active')) {
+                nextQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
